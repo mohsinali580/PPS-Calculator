@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Polybag Price Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2980b9;
+      --background-color: #f5f5f5;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --border-color: #dddddd;
+    }
+    
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+    
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 15px;
+    }
+    
+    .card {
+      background-color: var(--card-color);
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    
+    .logo img {
+      max-width: 200px;
+      height: auto;
+    }
+    
+    h1, h2, h3 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-top: 0;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+    
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+    
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 16px;
+      background-color: white;
+    }
+    
+    textarea {
+      min-height: 80px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .primary-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .primary-btn:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .secondary-btn {
+      background-color: #e0e0e0;
+      color: var(--text-color);
+    }
+    
+    .secondary-btn:hover {
+      background-color: #d0d0d0;
+    }
+    
+    #result {
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      border-left: 4px solid var(--primary-color);
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .result-item {
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .result-item strong {
+      color: var(--primary-color);
+    }
+    
+    .section-title {
+      font-weight: 600;
+      margin: 15px 0 10px;
+      color: var(--primary-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 5px;
+    }
+    
+    .collapsible {
+      background-color: #f1f1f1;
+      color: var(--text-color);
+      cursor: pointer;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    
+    .collapsible:after {
+      content: '\002B';
+      color: var(--text-color);
+      font-weight: bold;
+      float: right;
+      margin-left: 5px;
+    }
+    
+    .active:after {
+      content: "\2212";
+    }
+    
+    .content {
+      padding: 0 0 0 15px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease-out;
+    }
+    
+    @media (min-width: 600px) {
+      .container {
+        max-width: 600px;
+        padding: 20px;
+      }
+      
+      .button-group {
+        justify-content: center;
+      }
+      
+      button {
+        flex: none;
+        padding: 12px 25px;
+      }
+      
+      .logo img {
+        max-width: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="pps logo.jpg" alt="Print Pack Services Logo">
+    </div>
+    
+    <h1>Print Pack Services</h1>
+    <h2>Polybag Quotation Calculator</h2>
+    
+    <div class="card">
+      <h3>Customer Details</h3>
+      <div class="form-group">
+        <label for="customerName">Customer Name:</label>
+        <input type="text" id="customerName" placeholder="Enter customer name">
+      </div>
+      <div class="form-group">
+        <label for="customerContact">Customer Contact:</label>
+        <input type="text" id="customerContact" placeholder="Enter contact number">
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>Product Details</h3>
+      <div class="form-group">
+        <label for="productType">Product Type:</label>
+        <select id="productType">
+          <option value="POLY BAG">POLY BAG</option>
+          <option value="BAND">BAND</option>
+          <option value="COURIER BAG">COURIER/FLYER BAG</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="productDescription">Product Description:</label>
+        <textarea id="productDescription" placeholder="Enter product description"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="printingColor">Printing Colour:</label>
+        <input type="text" id="printingColor" placeholder="e.g. 1-color, 2-color, etc.">
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>Bag Specifications</h3>
+      <div class="form-group">
+        <label for="material">Material Type:</label>
+        <select id="material">
+          <option value="LDPE">LDPE (0.92 g/cm³)</option>
+          <option value="HDPE">HDPE (0.95 g/cm³)</option>
+          <option value="PP">PP (0.90 g/cm³)</option>
+          <option value="CPP">CPP (0.89 g/cm³)</option>
+          <option value="BOPP">BOPP (0.91 g/cm³)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="width">Width (W):</label>
+        <input type="number" id="width" placeholder="e.g. 10" step="any" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="length">Length (L):</label>
+        <input type="number" id="length" placeholder="e.g. 15" step="any" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="flap">Flap (F):</label>
+        <input type="number" id="flap" placeholder="e.g. 2" step="any" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="gusset">Gusset (G):</label>
+        <input type="number" id="gusset" placeholder="e.g. 1" step="any" inputmode="decimal" value="0">
+      </div>
+      
+      <div class="form-group">
+        <label for="micron">Micron (thickness):</label>
+        <input type="number" id="micron" placeholder="e.g. 50" step="any" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="unit">Unit:</label>
+        <select id="unit">
+          <option value="mm">Millimeters (mm)</option>
+          <option value="cm">Centimeters (cm)</option>
+          <option value="inch">Inches</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="moq">Minimum Order Quantity (MOQ):</label>
+        <input type="number" id="moq" placeholder="Enter MOQ" inputmode="numeric">
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>Pricing Details</h3>
+      <div class="form-group">
+        <label for="pricePerKg">Price per Kg (PKR):</label>
+        <input type="number" id="pricePerKg" value="150" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="printingCost">Block/Cylinder Cost (One Time):</label>
+        <input type="number" id="printingCost" value="0" inputmode="decimal">
+      </div>
+    </div>
+    
+    <button type="button" class="collapsible">Additional Costs</button>
+    <div class="content">
+      <div class="form-group">
+        <label for="handlingFee">Handling Fee (PKR):</label>
+        <input type="number" id="handlingFee" value="0" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="tapeCost">Adhesive Tape Cost (PKR per inch):</label>
+        <input type="number" id="tapeCost" value="0" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="glueCost">Glue Cost (PKR per inch):</label>
+        <input type="number" id="glueCost" value="0" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="codingCost">Coding Cost (flat PKR):</label>
+        <input type="number" id="codingCost" value="0" inputmode="decimal">
+      </div>
+    </div>
+    
+    <button type="button" class="collapsible">PE Pocket Details</button>
+    <div class="content">
+      <div class="form-group">
+        <label for="peMaterial">PE Pocket Material:</label>
+        <select id="peMaterial">
+          <option value="LDPE">LDPE (0.92 g/cm³)</option>
+          <option value="HDPE">HDPE (0.95 g/cm³)</option>
+          <option value="PP">PP (0.90 g/cm³)</option>
+          <option value="CPP">CPP (0.89 g/cm³)</option>
+          <option value="BOPP">BOPP (0.91 g/cm³)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="peLength">PE Pocket Length:</label>
+        <input type="number" id="peLength" value="0" inputmode="decimal">
+      </div>
+      
+      <div class="form-group">
+        <label for="peMicron">PE Pocket Micron:</label>
+        <input type="number" id="peMicron" value="0" inputmode="decimal">
+      </div>
+    </div>
+    
+    <div class="button-group">
+      <button class="primary-btn" onclick="handleCalculate()">Calculate</button>
+      <button class="secondary-btn" onclick="resetForm()">Reset</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <div class="button-group">
+      <button class="primary-btn" onclick="exportToPDF()">Generate Quotation PDF</button>
+    </div>
+  </div>
+
+  <script>
+    // Collapsible sections
+    const coll = document.getElementsByClassName("collapsible");
+    for (let i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        const content = this.nextElementSibling;
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + "px";
+        } 
+      });
+    }
+    
+    // Initialize collapsible content heights
+    window.addEventListener('DOMContentLoaded', (event) => {
+      const contents = document.getElementsByClassName("content");
+      for (let i = 0; i < contents.length; i++) {
+        contents[i].style.maxHeight = "0";
+      }
+    });
+
+    const materialDensities = {
+      LDPE: 0.92,
+      HDPE: 0.95,
+      PP: 0.90,
+      CPP: 0.89,
+      BOPP: 0.91
+    };
+
+    function handleCalculate() {
+      // Validate required fields
+      const requiredFields = ['width', 'length', 'flap', 'micron'];
+      for (const field of requiredFields) {
+        const element = document.getElementById(field);
+        if (!element.value || isNaN(element.value)) {
+          alert(`Please enter a valid number for ${element.previousElementSibling.innerText.replace(':', '').trim()}`);
+          element.focus();
+          return;
+        }
+      }
+
+      const data = {
+        productType: document.getElementById("productType").value,
+        productDescription: document.getElementById("productDescription").value,
+        printingColor: document.getElementById("printingColor").value,
+        material: document.getElementById("material").value,
+        width: parseFloat(document.getElementById("width").value),
+        length: parseFloat(document.getElementById("length").value),
+        flap: parseFloat(document.getElementById("flap").value),
+        gusset: parseFloat(document.getElementById("gusset").value) || 0,
+        micron: parseFloat(document.getElementById("micron").value),
+        unit: document.getElementById("unit").value,
+        pricePerKg: parseFloat(document.getElementById("pricePerKg").value) || 150,
+        printingCost: parseFloat(document.getElementById("printingCost").value) || 0,
+        handlingFee: parseFloat(document.getElementById("handlingFee").value) || 0,
+        moq: document.getElementById("moq").value || "Not specified",
+        tapeCost: parseFloat(document.getElementById("tapeCost").value) || 0,
+        glueCost: parseFloat(document.getElementById("glueCost").value) || 0,
+        codingCost: parseFloat(document.getElementById("codingCost").value) || 0,
+        peMicron: parseFloat(document.getElementById("peMicron").value) || 0,
+        peLength: parseFloat(document.getElementById("peLength").value) || 0,
+        peMaterial: document.getElementById("peMaterial").value,
+        customerName: document.getElementById("customerName").value || "Not specified",
+        customerContact: document.getElementById("customerContact").value || "Not specified"
+      };
+
+      const factor = { mm: 1, cm: 10, inch: 25.4 }[data.unit];
+      const density = materialDensities[data.material];
+
+      const widthMM = data.width * factor;
+      const lengthMM = data.length * factor;
+      const flapMM = data.flap * factor;
+      const gussetMM = data.gusset * factor;
+
+      const totalWidth = widthMM + flapMM + gussetMM;
+      const areaPerBag = totalWidth * lengthMM;
+      const thicknessMM = data.micron / 1000;
+      const volume = areaPerBag * thicknessMM / 1000;
+      const weightGrams = volume * density;
+      const weightKg = weightGrams / 1000;
+      const basePrice = weightKg * data.pricePerKg;
+
+      // Calculate extra costs
+      const tapeCost = data.tapeCost * (widthMM / 25.4);
+      const glueCost = data.glueCost * (widthMM / 25.4);
+      const peDensity = materialDensities[data.peMaterial];
+      const peVolume = (widthMM * data.peLength * factor * (data.peMicron / 1000)) / 1000;
+      const peWeight = (peVolume * peDensity) / 1000;
+      const peCost = peWeight * data.pricePerKg;
+
+      let totalCost = basePrice + data.handlingFee + data.codingCost + tapeCost + glueCost + peCost;
+      const gst = totalCost * 0.18;
+      const finalCost = totalCost + gst;
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+      resultDiv.innerHTML = `
+        <h3>Quotation Summary</h3>
+        <div class="result-item"><span>Customer:</span> <strong>${data.customerName}</strong></div>
+        <div class="result-item"><span>Contact:</span> <strong>${data.customerContact}</strong></div>
+        <div class="result-item"><span>MOQ:</span> <strong>${data.moq}</strong></div>
+        
+        <div class="section-title">Product Details</div>
+        <div class="result-item"><span>Product Type:</span> <strong>${data.productType}</strong></div>
+        <div class="result-item"><span>Description:</span> <strong>${data.productDescription || 'N/A'}</strong></div>
+        <div class="result-item"><span>Printing Colour:</span> <strong>${data.printingColor || 'N/A'}</strong></div>
+        
+        <div class="section-title">Bag Specifications</div>
+        <div class="result-item"><span>Material:</span> <strong>${data.material}</strong></div>
+        <div class="result-item"><span>Dimensions:</span> <strong>${data.width}${data.unit} (W) × ${data.length}${data.unit} (L) + ${data.flap}${data.unit} (F) + ${data.gusset}${data.unit} (G)</strong></div>
+        <div class="result-item"><span>Thickness:</span> <strong>${data.micron} micron</strong></div>
+        <div class="result-item"><span>Weight per bag:</span> <strong>${weightGrams.toFixed(2)} g (${weightKg.toFixed(4)} kg)</strong></div>
+        
+        <div class="section-title">Pricing</div>
+        <div class="result-item"><span>Base Price:</span> <strong>PKR ${basePrice.toFixed(2)}</strong></div>
+        <div class="result-item"><span>Additional Costs:</span> <strong>PKR ${(data.handlingFee + data.codingCost + tapeCost + glueCost + peCost).toFixed(2)}</strong></div>
+        <div class="result-item"><span>Subtotal:</span> <strong>PKR ${totalCost.toFixed(2)}</strong></div>
+        <div class="result-item"><span>GST (18%):</span> <strong>PKR ${gst.toFixed(2)}</strong></div>
+        <div class="result-item"><span style="font-size: 1.1em;">Final Price per Bag:</span> <strong style="font-size: 1.1em;">PKR ${finalCost.toFixed(2)}</strong></div>
+        <div class="result-item"><span>Block/Cylinder Cost (One Time):</span> <strong>PKR ${data.printingCost.toFixed(2)}</strong></div>
+      `;
+      
+      // Scroll to result
+      resultDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+      const inputs = document.querySelectorAll('input[type="number"], input[type="text"], textarea');
+      inputs.forEach(input => {
+        input.value = input.id === 'pricePerKg' ? '150' : 
+                     input.id === 'gusset' ? '0' :
+                     input.id === 'peLength' ? '0' :
+                     input.id === 'peMicron' ? '0' :
+                     input.id === 'printingCost' ? '0' : '';
+      });
+      
+      document.getElementById('productType').selectedIndex = 0;
+      document.getElementById('material').selectedIndex = 0;
+      document.getElementById('unit').selectedIndex = 0;
+      document.getElementById('peMaterial').selectedIndex = 0;
+      
+      document.getElementById('result').style.display = 'none';
+    }
+
+    function exportToPDF() {
+      const resultDiv = document.getElementById('result');
+      if (!resultDiv.innerHTML || resultDiv.style.display === 'none') {
+        alert('Please generate a quotation first by clicking Calculate');
+        return;
+      }
+      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const customerName = document.getElementById("customerName").value || 'Not specified';
+      const customerContact = document.getElementById("customerContact").value || 'Not specified';
+      const today = new Date().toLocaleDateString();
+      const productType = document.getElementById("productType").value;
+
+      // Set document properties
+      doc.setProperties({
+        title: 'Print Pack Quotation',
+        subject: 'Quotation for ' + productType,
+        author: 'Print Pack Services'
+      });
+
+      // Add company header with logo
+      doc.addImage('pps logo.jpg', 'JPEG', 80, 10, 50, 20);
+      
+      // Add company contact info
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont(undefined, 'normal');
+      doc.text('C-I, 321/1 Sector 16-B, North Karachi Industrial Area, Karachi', 105, 40, { align: 'center' });
+      doc.text('Phone: +92-21-36930518 | Cell: +92-300-9212056', 105, 45, { align: 'center' });
+      doc.text('Email: info@printpack.com.pk', 105, 50, { align: 'center' });
+      
+      // Add quotation title
+      doc.setFontSize(14);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${productType} PRICE QUOTATION`, 105, 60, { align: 'center' });
+      
+      // Add line separator
+      doc.setDrawColor(200, 200, 200);
+      doc.line(20, 65, 190, 65);
+      
+      // Add customer info
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont(undefined, 'bold');
+      doc.text('Customer Information:', 20, 75);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Name: ${customerName}`, 20, 80);
+      doc.text(`Contact: ${customerContact}`, 20, 85);
+      doc.text(`Date: ${today}`, 20, 90);
+      
+      // Add line separator
+      doc.line(20, 95, 190, 95);
+      
+      // Add product details
+      doc.setFont(undefined, 'bold');
+      doc.text('Product Details:', 20, 105);
+      doc.setFont(undefined, 'normal');
+      
+      const productDescription = document.getElementById("productDescription").value || 'N/A';
+      const printingColor = document.getElementById("printingColor").value || 'N/A';
+      
+      doc.text(`Type: ${productType}`, 20, 110);
+      doc.text(`Description: ${productDescription}`, 20, 115);
+      doc.text(`Printing Colour: ${printingColor}`, 20, 120);
+      
+      // Add line separator
+      doc.line(20, 125, 190, 125);
+      
+      // Add bag specifications
+      doc.setFont(undefined, 'bold');
+      doc.text('Bag Specifications:', 20, 135);
+      doc.setFont(undefined, 'normal');
+      
+      const material = document.getElementById("material").options[document.getElementById("material").selectedIndex].text;
+      const width = document.getElementById("width").value;
+      const length = document.getElementById("length").value;
+      const flap = document.getElementById("flap").value;
+      const gusset = document.getElementById("gusset").value || 0;
+      const unit = document.getElementById("unit").options[document.getElementById("unit").selectedIndex].text;
+      const micron = document.getElementById("micron").value;
+      const moq = document.getElementById("moq").value || "Not specified";
+      
+      doc.text(`Material: ${material}`, 20, 140);
+      doc.text(`Dimensions: ${width}${unit} (W) × ${length}${unit} (L) + ${flap}${unit} (F) + ${gusset}${unit} (G)`, 20, 145);
+      doc.text(`Thickness: ${micron} micron`, 20, 150);
+      doc.text(`MOQ: ${moq}`, 20, 155);
+      
+      // Add line separator
+      doc.line(20, 160, 190, 160);
+      
+      // Add pricing details
+      doc.setFont(undefined, 'bold');
+      doc.text('Pricing Details:', 20, 170);
+      doc.setFont(undefined, 'normal');
+      
+      // Get calculated values from result div
+      const resultItems = resultDiv.querySelectorAll('.result-item');
+      const pricingData = {};
+      
+      resultItems.forEach(item => {
+        const text = item.innerText.trim();
+        const colonIndex = text.indexOf(':');
+        if (colonIndex > -1) {
+          const key = text.substring(0, colonIndex).trim();
+          const value = text.substring(colonIndex + 1).trim();
+          pricingData[key] = value;
+        }
+      });
+      
+      let y = 175;
+      const pricingFields = [
+        'Base Price',
+        'Additional Costs',
+        'Subtotal',
+        'GST (18%)',
+        'Final Price per Bag',
+        'Block/Cylinder Cost (One Time)'
+      ];
+      
+      pricingFields.forEach(field => {
+        if (pricingData[field]) {
+          doc.text(`${field}:`, 30, y);
+          doc.text(pricingData[field], 100, y);
+          y += 7;
+        }
+      });
+      
+      // Add total box
+      doc.setDrawColor(40, 40, 40);
+      doc.setFillColor(240, 240, 240);
+      doc.rect(120, y + 5, 80, 15, 'FD');
+      doc.setFont(undefined, 'bold');
+      doc.text('TOTAL PER BAG:', 125, y + 10);
+      doc.text(pricingData['Final Price per Bag'] || 'PKR 0.00', 160, y + 10);
+      
+      // Add block/cylinder cost separately
+      y += 25;
+      doc.setFont(undefined, 'bold');
+      doc.text('ONE TIME COSTS:', 20, y);
+      doc.setFont(undefined, 'normal');
+      doc.text('Block/Cylinder Cost:', 30, y + 5);
+      doc.text(pricingData['Block/Cylinder Cost (One Time)'] || 'PKR 0.00', 100, y + 5);
+      
+      // Add footer
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont(undefined, 'normal');
+      doc.text('Thank you for your business!', 105, 285, { align: 'center' });
+      doc.text('This quotation is valid for 15 days from the date of issue', 105, 290, { align: 'center' });
+
+      // Save the PDF
+      doc.save(`PrintPack_${productType.replace(/ /g, '_')}_Quotation.pdf`);
+    }
+  </script>
+</body>
+</html>
